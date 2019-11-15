@@ -59,4 +59,33 @@ public class Prospector : MonoBehaviour {
         return (cd);
     }
 
+    void LayoutGame()
+    {
+        if(layoutAnchor == null)
+        {
+            GameObject tGO = new GameObject("_LayoutAnchor");
+            layoutAnchor = tGO.transform;
+            layoutAnchor.transform.position = layoutCenter;
+        }
+
+        CardProspector cp;
+
+        foreach (SlotDef tSD in layout.slotDefs)
+        {
+            cp = Draw();
+            cp.faceUp = tSD.faceUp;
+            cp.transform.parent = layoutAnchor;
+            cp.transform.localPosition = new Vector3(
+                layout.multiplier.x * tSD.x,
+                layout.multiplier.y * tSD.y,
+                -tSD.layerID);
+            cp.layoutID = tSD.id;
+            cp.slotDef = tSD;
+            cp.state = eCardState.tableau;
+            cp.SetSortingLayerName(tSD.layerName);
+
+            tableau.Add(cp);
+        }
+    }
+
 }

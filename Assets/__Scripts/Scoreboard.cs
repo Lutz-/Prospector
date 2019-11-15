@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class Scoreboard : MonoBehaviour
 {
-    public static Scoreboard s;
+    public static Scoreboard S;
 
     [Header("Set in Inspector")]
     public GameObject prefabFloatingScore;
@@ -45,8 +45,8 @@ public class Scoreboard : MonoBehaviour
 
     void Awake()
     {
-        if (s == null)
-            s = this;
+        if (S == null)
+            S = this;
         else
             Debug.LogError("ERROR: Scoreboard.Awake(): S is already set");
         canvasTrans = transform.parent;

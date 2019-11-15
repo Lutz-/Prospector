@@ -15,9 +15,13 @@ public class Prospector : MonoBehaviour {
     public float xOffset = 3;
     public float yOffset = -2.5f;
     public Vector3 layoutCenter;
+    public Vector2 fsPosMid = new Vector2(0.5f, 0.90f);
+    public Vector2 fsPosRun = new Vector2(0.5f, 0.75f);
+    public Vector2 fsPosMid2 = new Vector2(0.4f, 1.0f);
+    public Vector2 fsPosEnd = new Vector2(0.5f, 0.95f);
 
 
-	[Header("Set Dynamically")]
+    [Header("Set Dynamically")]
 	public Deck	deck;
     public Layout layout;
     public List<CardProspector> drawPile;
@@ -25,13 +29,15 @@ public class Prospector : MonoBehaviour {
     public CardProspector target;
     public List<CardProspector> discardPile;
     public List<CardProspector> tableau;
+    public FloatingScore fsRun;
 
 	void Awake(){
 		S = this;
 	}
 
 	void Start() {
-		deck = GetComponent<Deck> ();
+        Scoreboard.S.score = ScoreManager.SCORE;
+        deck = GetComponent<Deck> ();
 		deck.InitDeck (deckXML.text);
 
         layout = GetComponent<Layout>();
@@ -194,6 +200,7 @@ public class Prospector : MonoBehaviour {
                 MoveToTarget(Draw());
                 UpdateDrawPile();
                 ScoreManager.EVENT(eScoreEvent.draw);
+                FloatingScoreHandler(eScoreEvent.draw);
                 break;
 
             case eCardState.tableau:
@@ -208,7 +215,7 @@ public class Prospector : MonoBehaviour {
                 MoveToTarget(cd);
                 SetTableauFaces();
                 ScoreManager.EVENT(eScoreEvent.mine);
-
+                FloatingScoreHandler(eScoreEvent.mine);
                 break;
         }
 
@@ -238,13 +245,17 @@ public class Prospector : MonoBehaviour {
     void GameOver(bool won)
     {
         if (won)
+        {
             // print("FOE VANQUISHED");
             ScoreManager.EVENT(eScoreEvent.gameWin);
-
+            FloatingScoreHandler(eScoreEvent.gameWin);
+        }
         else
+        {
             //print("YOU DIED");
             ScoreManager.EVENT(eScoreEvent.gameLoss);
-
+            FloatingScoreHandler(eScoreEvent.gameLoss);
+        }
         SceneManager.LoadScene("__Prospector_Scene_0");
     }
 
@@ -259,6 +270,49 @@ public class Prospector : MonoBehaviour {
         if (c0.rank == 13 && c1.rank == 1) return true;
 
         return false;
+    }
+
+    void FloatingScoreHandler(eScoreEvent evt)
+    {
+        List<Vector2> fsPts;
+        switch (evt)
+        {
+            case eScoreEvent.draw:
+            case eScoreEvent.gameLoss:
+            case eScoreEvent.gameWin:
+                if(fsRun!= null)
+                {
+                    fsPts = new List<Vector2>();
+                    fsPts.Add(fsPosRun);
+                    fsPts.Add(fsPosMid2);
+                    fsPts.Add(fsPosEnd);
+                    fsRun.reportFinishTo = Scoreboard.S.gameObject;
+                    fsRun.Init(fsPts, 0, 1);
+                    fsRun.fontSizes = new List<float>(new float[] { 28, 36, 4 });
+                    fsRun = null;
+                }
+                break;
+
+            case eScoreEvent.mine:
+                FloatingScore fs;
+                Vector2 p0 = Input.mousePosition;
+                p0.x /= Screen.width;
+                p0.y /= Screen.height;
+                fsPts = new List<Vector2>();
+                fsPts.Add(p0);
+                fsPts.Add(fsPosMid);
+                fsPts.Add(fsPosRun);
+                fs = Scoreboard.S.CreateFloatingScore(ScoreManager.CHAIN, fsPts);
+                fs.fontSizes = new List<float>(new float[] { 4, 50, 28 });
+                if (fsRun == null)
+                {
+                    fsRun = fs;
+                    fsRun.reportFinishTo = null;
+                }
+                else
+                    fs.reportFinishTo = fsRun.gameObject;
+                break;
+        }
     }
 
 }

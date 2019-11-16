@@ -69,6 +69,7 @@ public class Prospector : MonoBehaviour {
         Scoreboard.S.score = ScoreManager.SCORE;
         deck = GetComponent<Deck> ();
 		deck.InitDeck (deckXML.text);
+        Deck.Shuffle(ref deck.cards);
 
         layout = GetComponent<Layout>();
         layout.ReadLayout(layoutXML.text);
